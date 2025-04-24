@@ -43,7 +43,7 @@ class Line:
 
 
 class Cell:
-    def __init__(self, window, p1, p2, top=True, bottom=True, left=True, right=True):
+    def __init__(self, p1, p2, top=True, bottom=True, left=True, right=True, window=None):
         self.has_left_wall = left
         self.has_right_wall = right
         self.has_top_wall = top
@@ -76,7 +76,7 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, p, n_rows, n_cols, cell_size_x, cell_size_y, win):
+    def __init__(self, p, n_rows, n_cols, cell_size_x, cell_size_y, win=None):
         self.start_point = p
         self.n_rows = n_rows
         self.n_cols = n_cols
@@ -86,17 +86,23 @@ class Maze:
         self.cells = []
 
     def create_cells(self):
-        for i in range(0, self.n_rows):
-            for j in range(0, self.n_cols):
-                self.cells.append(Cell(self.window, Point(i * self.self_size_x, j * self.self_size_y),
-                                       Point(i * self.self_size_x + self.self_size_x,
-                                             j * self.self_size_y + self.self_size_y)
-                                       ))
+        for i in range(0, self.n_cols):
+            tmp = []
+            for j in range(0, self.n_rows):
+                tmp.append(Cell(Point(i * self.self_size_x, j * self.self_size_y),
+                                Point(i * self.self_size_x + self.self_size_x,
+                                      j * self.self_size_y + self.self_size_y)
+                                , window=self.window))
+            self.cells.append(tmp)
 
-        for cell in self.cells:
-            cell.draw()
-            self.animate()
+        if self.window is None:
+            return
+
+        for col in self.cells:
+            for cell in col:
+                cell.draw()
+                self.animate()
 
     def animate(self):
         self.window.redraw()
-        time.sleep(0.1)
+        time.sleep(0.01)
