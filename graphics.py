@@ -1,3 +1,4 @@
+import random
 import time
 from tkinter import Tk, BOTH, Canvas
 
@@ -51,19 +52,28 @@ class Cell:
         self.win = window
         self.p1 = p1
         self.p2 = p2
+        self.visited = False
 
     def draw(self):
         if self.has_top_wall:
             self.win.draw_line(Line(self.p1, Point(self.p2.x, self.p1.y)))
+        else:
+            self.win.draw_line(Line(self.p1, Point(self.p2.x, self.p1.y)), "white")
 
         if self.has_bottom_wall:
             self.win.draw_line(Line(Point(self.p1.x, self.p2.y), self.p2))
+        else:
+            self.win.draw_line(Line(Point(self.p1.x, self.p2.y), self.p2), "white")
 
         if self.has_left_wall:
             self.win.draw_line(Line(self.p1, Point(self.p1.x, self.p2.y)))
+        else:
+            self.win.draw_line(Line(self.p1, Point(self.p1.x, self.p2.y)), "white")
 
         if self.has_right_wall:
             self.win.draw_line(Line(Point(self.p2.x, self.p1.y), self.p2))
+        else:
+            self.win.draw_line(Line(Point(self.p2.x, self.p1.y), self.p2), "white")
 
     def center_point(self):
         return Point(self.p1.x + ((self.p2.x - self.p1.x) / 2), self.p1.y + ((self.p2.y - self.p1.y) / 2))
@@ -76,7 +86,7 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, p, n_rows, n_cols, cell_size_x, cell_size_y, win=None):
+    def __init__(self, p, n_rows, n_cols, cell_size_x, cell_size_y, win=None, seed=None):
         self.start_point = p
         self.n_rows = n_rows
         self.n_cols = n_cols
@@ -84,6 +94,8 @@ class Maze:
         self.self_size_y = cell_size_y
         self.window = win
         self.cells = []
+        if seed is not None:
+            random.seed(seed)
 
     def create_cells(self):
         for i in range(0, self.n_cols):
@@ -95,6 +107,7 @@ class Maze:
                                 , window=self.window))
             self.cells.append(tmp)
 
+    def draw_cells(self):
         if self.window is None:
             return
 
@@ -106,3 +119,48 @@ class Maze:
     def animate(self):
         self.window.redraw()
         time.sleep(0.01)
+
+    def break_entrance_and_exit(self):
+        self.cells[0][0].has_top_wall = False
+        self.cells[-1][-1].has_bottom_wall = False
+
+    def break_walls_r(self, i, j):
+        self.cells[j][i].visited = True
+        # i - row
+        # j - colu
+        while True:
+            available = []
+            if i - 1 >= 0 and not self.cells[j][i - 1].visited:
+                available.append("up")
+
+            if i + 1 < self.n_rows and not self.cells[j][i + 1].visited:
+                available.append("down")
+
+            if j - 1 >= 0 and not self.cells[j - 1][i].visited:
+                available.append("left")
+
+            if j + 1 < self.n_cols and not self.cells[j + 1][i].visited:
+                available.append("right")
+
+            if len(available) == 0:
+                return
+
+            direction = random.choice(available)
+
+            if direction == "up":
+                self.cells[j][i].has_top_wall = False
+                self.cells[j][i - 1].has_bottom_wall = False
+                self.break_walls_r(i - 1, j)
+            elif direction == "down":
+                self.cells[j][i + 1].has_top_wall = False
+                self.cells[j][i].has_bottom_wall = False
+                self.break_walls_r(i + 1, j)
+            elif direction == "left":
+                self.cells[j][i].has_left_wall = False
+                self.cells[j - 1][i].has_right_wall = False
+                self.break_walls_r(i, j - 1)
+            elif direction == "right":
+                self.cells[j][i].has_right_wall = False
+                self.cells[j + 1][i].has_left_wall = False
+                self.break_walls_r(i, j + 1)
+
