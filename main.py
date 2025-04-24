@@ -7,4 +7,6 @@ if __name__ == "__main__":
     m1.break_entrance_and_exit()
     m1.break_walls_r(0, 0)
     m1.draw_cells()
+    m1.reset_cells_visited()
+    m1.solve_r_dfs(0, 0)
     win.wait_for_close()

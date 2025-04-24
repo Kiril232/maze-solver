@@ -118,7 +118,7 @@ class Maze:
 
     def animate(self):
         self.window.redraw()
-        time.sleep(0.01)
+        time.sleep(0.09)
 
     def break_entrance_and_exit(self):
         self.cells[0][0].has_top_wall = False
@@ -127,7 +127,7 @@ class Maze:
     def break_walls_r(self, i, j):
         self.cells[j][i].visited = True
         # i - row
-        # j - colu
+        # j - column
         while True:
             available = []
             if i - 1 >= 0 and not self.cells[j][i - 1].visited:
@@ -164,3 +164,55 @@ class Maze:
                 self.cells[j + 1][i].has_left_wall = False
                 self.break_walls_r(i, j + 1)
 
+    def solve_r_dfs(self, i, j):
+        self.animate()
+        print("h")
+        self.cells[j][i].visited = True
+
+        if i == self.n_rows - 1 and j == self.n_cols - 1:
+            return True
+
+        # i - row
+        # j - column
+
+        if i - 1 >= 0 and not self.cells[j][i - 1].visited and not self.cells[j][i].has_top_wall:
+            # up
+            self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j][i - 1].center_point()), "red")
+            if self.solve_r(i - 1, j) is True:
+                return True
+            else:
+                self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j][i - 1].center_point()),
+                                      "white")
+
+        if i + 1 < self.n_rows and not self.cells[j][i + 1].visited and not self.cells[j][i].has_bottom_wall:
+            # down
+            self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j][i + 1].center_point()), "red")
+            if self.solve_r(i + 1, j) is True:
+                return True
+            else:
+                self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j][i + 1].center_point()),
+                                      "white")
+
+        if j - 1 >= 0 and not self.cells[j - 1][i].visited and not self.cells[j][i].has_left_wall:
+            # left
+            self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j - 1][i].center_point()), "red")
+            if self.solve_r(i, j - 1) is True:
+                return True
+            else:
+                self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j - 1][i].center_point()),
+                                      "white")
+
+        if j + 1 < self.n_cols and not self.cells[j + 1][i].visited and not self.cells[j][i].has_right_wall:
+            # right
+            self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j + 1][i].center_point()), "red")
+            if self.solve_r(i, j + 1) is True:
+                return True
+            else:
+                self.window.draw_line(Line(self.cells[j][i].center_point(), self.cells[j + 1][i].center_point()),
+                                      "white")
+        return False
+
+    def reset_cells_visited(self):
+        for col in self.cells:
+            for cell in col:
+                cell.visited = False
